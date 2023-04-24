@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { createUserWithEmailAndPassword, getAuth } from 'firebase/auth'
+import { createUserWithEmailAndPassword, getAuth, sendEmailVerification, updateProfile } from 'firebase/auth'
 import app from '../../firebase/firebase.init';
 import { Link } from 'react-router-dom';
 
@@ -20,17 +20,20 @@ const Register = () => {
         // 2. Collect form date
         const email = event.target.email.value;
         const password = event.target.password.value;
-        console.log(email, password)
+
+        // for display user name
+        const name = event.target.name.value;
+        console.log(name, email, password)
 
         // validate
-        if ( ! /(?=.*[A-Z])/.test(password)) {
+        if (! /(?=.*[A-Z])/.test(password)) {
             setError('Please use at least one upper case');
             return;
         }
-        else if( ! /(?=.[0-9].*[0-9])/.test(password)){
+        else if (! /(?=.[0-9].*[0-9])/.test(password)) {
             setError('Password should contain two digit')
         }
-        else if(password.length <= 6){
+        else if (password.length <= 6) {
             setError('Password should be at least 6 characters')
         }
 
@@ -43,6 +46,12 @@ const Register = () => {
                 event.target.reset();
 
                 setSuccess('User has been created successfully')
+
+                // FOR EMAIL VERIFICATION
+                sendVerificationEmail(result.user)
+
+                // for display user name
+                updateUserData(result.user, name )
             })
             .catch(error => {
                 console.error(error.message);
@@ -50,30 +59,63 @@ const Register = () => {
             })
     }
 
-    const handleEmailChange = (event) => {
-        // console.log(event.target.value)
-        // setEmail(event.target.value)
+    // for Verification email
+    const sendVerificationEmail = (user) => {
+        sendEmailVerification(user)
+            .then(result => {
+                console.log(result)
+                alert('Please verify your email address')
+            })
     }
 
-    const handlePasswordBlur = (event) => {
-        // console.log(event.target.value)
+    // for display user name
+    const updateUserData = (user, name) => {
+        updateProfile(user, {
+            displayName: name
+        })
+            .then( () =>{
+                console.log('User Name Updated')
+            } ) 
+            .catch(error => {
+                setError(error.message)
+            })
     }
 
-    return (
-        <div className='w-50 mx-auto'>
-            <h4>Please Register</h4>
-            <form onSubmit={handleSubmit}>
-                <input className='w-50 mb-4 rounded ps-2' onChange={handleEmailChange} type="email" name='email' id='email' placeholder='Your email' required />
-                <br />
-                <input className='w-50 mb-4 rounded ps-2' onBlur={handlePasswordBlur} type="password" name="password" id="password" placeholder='Your password' required />
-                <br />
-                <input className='btn btn-primary' type="submit" value="Register" />
-            </form>
-            <p><small>Already have an account? Please <Link to='/login'>Login</Link></small></p>
-            <p className='text-danger'>{error}</p>
-            <p className='text-success'>{success}</p>
-        </div>
-    );
+
+const handleEmailChange = (event) => {
+    // console.log(event.target.value)
+    // setEmail(event.target.value)
+}
+
+const handlePasswordBlur = (event) => {
+    // console.log(event.target.value)
+}
+
+return (
+    <div className='w-50 mx-auto'>
+        <h4>Please Register</h4>
+        <form onSubmit={handleSubmit}>
+
+            {/* for display name */}
+            <input className='w-50 mb-4 rounded ps-2' type="text" name='name' id='name' placeholder='Your Name' required />
+            <br />
+
+            <input className='w-50 mb-4 rounded ps-2' onChange={handleEmailChange} type="email" name='email' id='email' placeholder='Your email' required />
+            <br />
+
+            <input className='w-50 mb-4 rounded ps-2' onBlur={handlePasswordBlur} type="password" name="password" id="password" placeholder='Your password' required />
+            <br />
+
+            <input className='btn btn-primary' type="submit" value="Register" />
+        </form>
+
+        <p><small>Already have an account? Please <Link to='/login'>Login</Link></small></p>
+
+        <p className='text-danger'>{error}</p>
+
+        <p className='text-success'>{success}</p>
+    </div>
+);
 };
 
 export default Register;
