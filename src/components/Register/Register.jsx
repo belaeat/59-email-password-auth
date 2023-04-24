@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { createUserWithEmailAndPassword, getAuth } from 'firebase/auth'
 import app from '../../firebase/firebase.init';
+import { Link } from 'react-router-dom';
 
 
 const auth = getAuth(app)
@@ -68,6 +69,7 @@ const Register = () => {
                 <br />
                 <input className='btn btn-primary' type="submit" value="Register" />
             </form>
+            <p><small>Already have an account? Please <Link to='/login'>Login</Link></small></p>
             <p className='text-danger'>{error}</p>
             <p className='text-success'>{success}</p>
         </div>
